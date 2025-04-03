@@ -1,11 +1,11 @@
-// Поддержка Windows XP для новых Visual Studio
+// РџРѕРґРґРµСЂР¶РєР° Windows XP РґР»СЏ РЅРѕРІС‹С… Visual Studio
 #define _WIN32_WINNT 0x0501
 #define WINVER 0x0501
 #define NTDDI_VERSION 0x05010000
 #define WIN32_LEAN_AND_MEAN
 #define PSAPI_VERSION 1
 
-// Стандартные инклуды
+// РЎС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РёРЅРєР»СѓРґС‹
 #include <Windows.h>
 #include <thread>
 #include <string>
@@ -17,18 +17,18 @@
 #include <intrin.h>
 // NtQueryInformationThread
 #include <winternl.h>
-// Защита строк
+// Р—Р°С‰РёС‚Р° СЃС‚СЂРѕРє
 #include "SimpleEncrypt.h"
-// Перехват WINAPI
+// РџРµСЂРµС…РІР°С‚ WINAPI
 #include "MinHook/include/MinHook.h"
 
-// Библиотеки 
-// ntdll.lib требуется для работы NtQueryInformationThread
+// Р‘РёР±Р»РёРѕС‚РµРєРё 
+// ntdll.lib С‚СЂРµР±СѓРµС‚СЃСЏ РґР»СЏ СЂР°Р±РѕС‚С‹ NtQueryInformationThread
 #pragma comment(lib, "ntdll.lib")
-// Для MinHook
+// Р”Р»СЏ MinHook
 #pragma comment(lib, "libMinHook.x86.lib")
 
-// Получает HMODULE из адреса в памяти. (x86)
+// РџРѕР»СѓС‡Р°РµС‚ HMODULE РёР· Р°РґСЂРµСЃР° РІ РїР°РјСЏС‚Рё. (x86)
 HMODULE GetModuleFromAddress(DWORD addr)
 {
 	if (!addr)
@@ -41,7 +41,7 @@ HMODULE GetModuleFromAddress(DWORD addr)
 	return hModule;
 }
 
-// Адрес старта потока (x86)
+// РђРґСЂРµСЃ СЃС‚Р°СЂС‚Р° РїРѕС‚РѕРєР° (x86)
 DWORD GetThreadStartAddr(DWORD dwThreadId)
 {
 	HANDLE ThreadHandle = NULL;
@@ -68,7 +68,7 @@ DWORD GetAddressProtection(LPVOID addr)
 	return oldprot;
 }
 
-// Проверка текущего потока
+// РџСЂРѕРІРµСЂРєР° С‚РµРєСѓС‰РµРіРѕ РїРѕС‚РѕРєР°
 bool AntihackScanCurrentThread()
 {
 	auto ThreadId = GetCurrentThreadId();
@@ -105,10 +105,10 @@ bool AntihackScanCurrentThread()
 
 DWORD WINAPI NULLTHREAD(LPVOID)
 {
-	// Можно создать пустой поток что бы он работал
+	// РњРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РїСѓСЃС‚РѕР№ РїРѕС‚РѕРє С‡С‚Рѕ Р±С‹ РѕРЅ СЂР°Р±РѕС‚Р°Р»
 	while (true)
 	{
-		// Но возможно процесс зависнет на выходе если будут попытки инжекта, тогда лучше сохранить список потоков и уничтожить их перед выгрузкой.
+		// РќРѕ РІРѕР·РјРѕР¶РЅРѕ РїСЂРѕС†РµСЃСЃ Р·Р°РІРёСЃРЅРµС‚ РЅР° РІС‹С…РѕРґРµ РµСЃР»Рё Р±СѓРґСѓС‚ РїРѕРїС‹С‚РєРё РёРЅР¶РµРєС‚Р°, С‚РѕРіРґР° Р»СѓС‡С€Рµ СЃРѕС…СЂР°РЅРёС‚СЊ СЃРїРёСЃРѕРє РїРѕС‚РѕРєРѕРІ Рё СѓРЅРёС‡С‚РѕР¶РёС‚СЊ РёС… РїРµСЂРµРґ РІС‹РіСЂСѓР·РєРѕР№.
 		Sleep(10000);
 	}
 	return 1;
@@ -131,7 +131,7 @@ void* __fastcall BaseThreadInitThunk_my(int unk1, PVOID StartAddress, PVOID Thre
 }
 
 
-/* Сканер памяти */
+/* РЎРєР°РЅРµСЂ РїР°РјСЏС‚Рё */
 struct ScanMemoryStruct
 {
 	DWORD address;
@@ -172,7 +172,7 @@ void AddScanMemory(const std::string& module, const std::string& function)
 	scanMemory.push_back({ addr, *(DWORD*)addr, GetAddressProtection((LPVOID)addr), 0 ,XorStr("Module:") + module + XorStr(". Funciton:") + function });
 }
 
-// Вывести список оффсетов для проверки (отладочная инфа)
+// Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РѕС„С„СЃРµС‚РѕРІ РґР»СЏ РїСЂРѕРІРµСЂРєРё (РѕС‚Р»Р°РґРѕС‡РЅР°СЏ РёРЅС„Р°)
 void DumpScanMemoryDebug()
 {
 	std::ostringstream s;
@@ -183,7 +183,7 @@ void DumpScanMemoryDebug()
 	MessageBoxA(0, s.str().c_str(), XorStr("ANTIHACK"), 0);
 }
 
-// Проверить все оффсеты на изменения
+// РџСЂРѕРІРµСЂРёС‚СЊ РІСЃРµ РѕС„С„СЃРµС‚С‹ РЅР° РёР·РјРµРЅРµРЅРёСЏ
 bool IsValidScanMemory()
 {
 	for (auto& i : scanMemory)
@@ -208,11 +208,11 @@ bool IsValidScanMemory()
 	return scanMemory.size() > 0;
 }
 
-// Например так можно проверять что поток сканирования работает
+// РќР°РїСЂРёРјРµСЂ С‚Р°Рє РјРѕР¶РЅРѕ РїСЂРѕРІРµСЂСЏС‚СЊ С‡С‚Рѕ РїРѕС‚РѕРє СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ СЂР°Р±РѕС‚Р°РµС‚
 int iScanCount = 0;
 
 bool bStartScan = false;
-// Быстрое сканирование памяти по таймеру
+// Р‘С‹СЃС‚СЂРѕРµ СЃРєР°РЅРёСЂРѕРІР°РЅРёРµ РїР°РјСЏС‚Рё РїРѕ С‚Р°Р№РјРµСЂСѓ
 void ScanThreadFunction()
 {
 	while (true)
@@ -232,14 +232,14 @@ void ScanThreadFunction()
 	}
 }
 
-//запускаем поток сканирования
+//Р·Р°РїСѓСЃРєР°РµРј РїРѕС‚РѕРє СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ
 std::thread ScanThread = std::thread(ScanThreadFunction);
 
-//загрузить какой-нибудь чит
+//Р·Р°РіСЂСѓР·РёС‚СЊ РєР°РєРѕР№-РЅРёР±СѓРґСЊ С‡РёС‚
 void CheatThreadFunction()
 {
 	std::this_thread::sleep_for(std::chrono::seconds(5));
-	//Загрузить какой-нибудь чит для теста
+	//Р—Р°РіСЂСѓР·РёС‚СЊ РєР°РєРѕР№-РЅРёР±СѓРґСЊ С‡РёС‚ РґР»СЏ С‚РµСЃС‚Р°
 	LoadLibraryA("UltraCheat.dll");
 }
 
@@ -247,7 +247,7 @@ std::thread CheatThread = std::thread(CheatThreadFunction);
 
 BOOL __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 {
-	// Первый вариант для сканирования создаваемых потоков
+	// РџРµСЂРІС‹Р№ РІР°СЂРёР°РЅС‚ РґР»СЏ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ СЃРѕР·РґР°РІР°РµРјС‹С… РїРѕС‚РѕРєРѕРІ
 	if (reason == DLL_THREAD_ATTACH)
 	{
 		AntihackScanCurrentThread();
@@ -255,14 +255,14 @@ BOOL __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 
 	if (reason == DLL_PROCESS_ATTACH)
 	{
-		// НЕЛЬЗЯ ВЫЗЫВАТЬ DisableThreadLibraryCalls
-		// иначе DLL_THREAD_ATTACH не будет работать
+		// РќР•Р›Р¬Р—РЇ Р’Р«Р—Р«Р’РђРўР¬ DisableThreadLibraryCalls
+		// РёРЅР°С‡Рµ DLL_THREAD_ATTACH РЅРµ Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ
 
-		// Тут инициализировать все перехваты которые будут использоваться что бы не было конфликта
+		// РўСѓС‚ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ РІСЃРµ РїРµСЂРµС…РІР°С‚С‹ РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ С‡С‚Рѕ Р±С‹ РЅРµ Р±С‹Р»Рѕ РєРѕРЅС„Р»РёРєС‚Р°
 		// 
 		// InitClientPatches();
 
-		// Перехватить нужные функции например LoadLibrary и т.п что бы смотреть какие DLL загружаются
+		// РџРµСЂРµС…РІР°С‚РёС‚СЊ РЅСѓР¶РЅС‹Рµ С„СѓРЅРєС†РёРё РЅР°РїСЂРёРјРµСЂ LoadLibrary Рё С‚.Рї С‡С‚Рѕ Р±С‹ СЃРјРѕС‚СЂРµС‚СЊ РєР°РєРёРµ DLL Р·Р°РіСЂСѓР¶Р°СЋС‚СЃСЏ
 		MH_Initialize();
 
 
@@ -270,19 +270,19 @@ BOOL __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 		LoadLibraryA(XorStr("ws2_32.dll"));
 		LoadLibraryA(XorStr("opengl32.dll"));
 
-		// Второй вариант для сканирования создаваемых потоков
+		// Р’С‚РѕСЂРѕР№ РІР°СЂРёР°РЅС‚ РґР»СЏ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ СЃРѕР·РґР°РІР°РµРјС‹С… РїРѕС‚РѕРєРѕРІ
 		BaseThreadInitThunk_org = (pBaseThreadInitThunk)GetProcAddress(GetModuleHandle(XorStr("kernel32.dll")), XorStr("BaseThreadInitThunk"));
 		if (BaseThreadInitThunk_org)
 		{
 			MH_CreateHook(BaseThreadInitThunk_org, &BaseThreadInitThunk_my, reinterpret_cast<void**>(&BaseThreadInitThunk_ptr));
 			MH_EnableHook(BaseThreadInitThunk_org);
 		}
-		// Можно еще перехватить GetModuleHandleA/W что бы скрыть модули от читеров, модули такие как hw.dll/client.dll и так далее
+		// РњРѕР¶РЅРѕ РµС‰Рµ РїРµСЂРµС…РІР°С‚РёС‚СЊ GetModuleHandleA/W С‡С‚Рѕ Р±С‹ СЃРєСЂС‹С‚СЊ РјРѕРґСѓР»Рё РѕС‚ С‡РёС‚РµСЂРѕРІ, РјРѕРґСѓР»Рё С‚Р°РєРёРµ РєР°Рє hw.dll/client.dll Рё С‚Р°Рє РґР°Р»РµРµ
 
 
 
-		// Ну и наконец добавить список оффсетов для сканирования
-		// Делать это только после применения всех патчей.
+		// РќСѓ Рё РЅР°РєРѕРЅРµС† РґРѕР±Р°РІРёС‚СЊ СЃРїРёСЃРѕРє РѕС„С„СЃРµС‚РѕРІ РґР»СЏ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ
+		// Р”РµР»Р°С‚СЊ СЌС‚Рѕ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РїСЂРёРјРµРЅРµРЅРёСЏ РІСЃРµС… РїР°С‚С‡РµР№.
 		AddScanMemory((DWORD)LoadLibraryA, XorStr("LoadLibraryA - HOOKED!"));
 		AddScanMemory((DWORD)LoadLibraryW, XorStr("LoadLibraryW - HOOKED!"));
 
@@ -298,17 +298,17 @@ BOOL __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 		AddScanMemory(XorStr("opengl32.dll"), XorStr("glDisable"));
 		AddScanMemory(XorStr("opengl32.dll"), XorStr("glBlendFunc"));
 		AddScanMemory(XorStr("opengl32.dll"), XorStr("glVertex3fv"));
-		// Добавить свои еще адреса для защиты
+		// Р”РѕР±Р°РІРёС‚СЊ СЃРІРѕРё РµС‰Рµ Р°РґСЂРµСЃР° РґР»СЏ Р·Р°С‰РёС‚С‹
 
-		// Указать потоку сканирования что все оффсеты добавлены и можно начинать
+		// РЈРєР°Р·Р°С‚СЊ РїРѕС‚РѕРєСѓ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ С‡С‚Рѕ РІСЃРµ РѕС„С„СЃРµС‚С‹ РґРѕР±Р°РІР»РµРЅС‹ Рё РјРѕР¶РЅРѕ РЅР°С‡РёРЅР°С‚СЊ
 		bStartScan = true;
 	}
 	else if (reason == DLL_PROCESS_DETACH)
 	{
 		bStartScan = false;
-		// Перед выходом из игры нужно убить поток сканирования что бы не произошло ложного срабатывания на выходе
+		// РџРµСЂРµРґ РІС‹С…РѕРґРѕРј РёР· РёРіСЂС‹ РЅСѓР¶РЅРѕ СѓР±РёС‚СЊ РїРѕС‚РѕРє СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ С‡С‚Рѕ Р±С‹ РЅРµ РїСЂРѕРёР·РѕС€Р»Рѕ Р»РѕР¶РЅРѕРіРѕ СЃСЂР°Р±Р°С‚С‹РІР°РЅРёСЏ РЅР° РІС‹С…РѕРґРµ
 		if (ScanThread.joinable())
-			TerminateThread(reinterpret_cast<HANDLE>(ScanThread.native_handle()), 0); // Уничтожение потока
+			TerminateThread(reinterpret_cast<HANDLE>(ScanThread.native_handle()), 0); // РЈРЅРёС‡С‚РѕР¶РµРЅРёРµ РїРѕС‚РѕРєР°
 		MH_DisableHook(MH_ALL_HOOKS);
 		MH_Uninitialize();
 		//ExitProcess(0);
